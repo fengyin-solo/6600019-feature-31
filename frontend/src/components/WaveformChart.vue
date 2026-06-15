@@ -14,11 +14,13 @@ import { LineChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, MarkLineComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { useSeismicStore } from '../store/seismic'
+import { storeToRefs } from 'pinia'
 import type { EChartsOption } from 'echarts'
 
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, MarkLineComponent])
 
 const store = useSeismicStore()
+const { selectedPickId } = storeToRefs(store)
 
 const components = [
   { key: 'bhz' as const, label: 'BHZ (垂直分量)', color: '#22d3ee' },
@@ -28,16 +30,23 @@ const components = [
 
 function getChartOption(key: 'bhz' | 'bhn' | 'bhe', color: string): EChartsOption {
   const wf = store.waveform!
-  // Downsample for performance
   const step = 5
   const time = wf.time.filter((_, i) => i % step === 0)
   const data = wf[key].filter((_, i) => i % step === 0)
 
-  const markLines = store.picks.map(p => ({
-    xAxis: p.time,
-    label: { formatter: p.type, color: p.type === 'P' ? '#ef4444' : '#3b82f6', fontSize: 14, fontWeight: 'bold' as const },
-    lineStyle: { color: p.type === 'P' ? '#ef4444' : '#3b82f6', width: 2, type: 'dashed' as const }
-  }))
+  const markLines = store.picks.map(p => {
+    const isSelected = selectedPickId.value === p.id
+    const baseColor = p.type === 'P' ? '#ef4444' : '#3b82f6'
+    const dimColor = p.type === 'P' ? 'rgba(239,68,68,0.25)' : 'rgba(59,130,246,0.25)'
+    const lineColor = isSelected ? baseColor : (selectedPickId.value ? dimColor : baseColor)
+    const labelColor = isSelected ? baseColor : (selectedPickId.value ? dimColor : baseColor)
+
+    return {
+      xAxis: p.time,
+      label: { formatter: p.type, color: labelColor, fontSize: isSelected ? 16 : 14, fontWeight: 'bold' as const },
+      lineStyle: { color: lineColor, width: isSelected ? 3 : 2, type: (isSelected ? 'solid' : 'dashed') as const }
+    }
+  })
 
   return {
     tooltip: { trigger: 'axis', formatter: (params: any) => `t=${params[0].value[0].toFixed(2)}s\namp=${params[0].value[1].toFixed(4)}` },

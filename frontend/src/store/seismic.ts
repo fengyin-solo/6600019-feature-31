@@ -9,6 +9,7 @@ export const useSeismicStore = defineStore('seismic', () => {
   const staWindow = ref(1.0)
   const ltaWindow = ref(10.0)
   const threshold = ref(3.5)
+  const selectedPickId = ref<string | null>(null)
   const isLoading = ref(false)
   const events = ref<SeismicEvent[]>([
     { id: '1', magnitude: 4.2, depth: 12.5, originTime: '2025-01-15T08:23:41Z', location: '四川雅安' },
@@ -131,9 +132,13 @@ export const useSeismicStore = defineStore('seismic', () => {
     }
   }
 
+  function selectPick(id: string | null) {
+    selectedPickId.value = selectedPickId.value === id ? null : id
+  }
+
   return {
-    waveform, picks, selectedStation, staWindow, ltaWindow, threshold,
+    waveform, picks, selectedStation, selectedPickId, staWindow, ltaWindow, threshold,
     isLoading, events, stations,
-    loadMockData, staLtaPicking, uploadAndAnalyze, generateMockWaveform
+    loadMockData, staLtaPicking, uploadAndAnalyze, generateMockWaveform, selectPick
   }
 })

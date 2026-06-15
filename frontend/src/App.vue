@@ -37,7 +37,12 @@
       <!-- Picks -->
       <div class="bg-gray-800 rounded-xl p-3">
         <h3 class="text-cyan-300 font-bold text-sm mb-2">震相拾取结果</h3>
-        <div v-for="p in store.picks" :key="p.id" class="flex justify-between bg-gray-700 rounded p-2 mb-1 text-sm">
+        <div v-for="p in store.picks" :key="p.id"
+          @click="store.selectPick(p.id)"
+          class="flex justify-between rounded p-2 mb-1 text-sm cursor-pointer transition-all"
+          :class="store.selectedPickId === p.id
+            ? 'bg-cyan-700/60 ring-1 ring-cyan-400'
+            : 'bg-gray-700 hover:bg-gray-600'">
           <span :class="p.type === 'P' ? 'text-red-400' : 'text-blue-400'">{{ p.type }} 波</span>
           <span>{{ p.time.toFixed(2) }}s</span>
           <span class="text-gray-400">{{ (p.confidence * 100).toFixed(0) }}%</span>
